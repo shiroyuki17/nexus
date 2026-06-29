@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyberpunk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LN4 // LANDO NORRIS — NEURAL GRID 2025</title>
+  <meta name="description" content="Lando Norris — McLaren F1 Driver. Neural Grid 2025. Live telemetry, race data, and behind-the-scenes access. Cyberpunk edition." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCANLINE OVERLAY -->
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- ===== NAV ===== -->
+  <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="#" class="nav-brand" id="nav-brand-link" aria-label="LN4 Home">
+        <span class="brand-ln">LN</span><span class="brand-num">4</span>
+        <span class="brand-slash">//</span>
+        <span class="brand-sub">NEURAL GRID</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="#on-track" class="nav-link" id="nav-link-track">ON TRACK</a></li>
+        <li><a href="#results" class="nav-link" id="nav-link-results">RESULTS</a></li>
+        <li><a href="#off-track" class="nav-link" id="nav-link-offtrack">OFF TRACK</a></li>
+        <li><a href="#merch" class="nav-link" id="nav-link-merch">MERCH</a></li>
+      </ul>
+      <a href="#" class="nav-cta" id="nav-cta-btn">
+        <span class="nav-cta-text">ACCESS</span>
+        <span class="nav-cta-icon">→</span>
+      </a>
+      <button class="nav-ham" id="nav-ham-btn" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+      <ul role="list">
+        <li><a href="#on-track" class="nav-mobile-link" id="mob-link-track">ON TRACK</a></li>
+        <li><a href="#results" class="nav-mobile-link" id="mob-link-results">RESULTS</a></li>
+        <li><a href="#off-track" class="nav-mobile-link" id="mob-link-offtrack">OFF TRACK</a></li>
+        <li><a href="#merch" class="nav-mobile-link" id="mob-link-merch">MERCH</a></li>
+        <li><a href="#" class="nav-mobile-link is-cta" id="mob-link-access">ACCESS //</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" id="hero" aria-label="Hero section">
+    <div class="hero-grid-lines" aria-hidden="true"><canvas id="hero-canvas"></canvas></div>
+    <div class="hero-bg-text" aria-hidden="true">
+      <span class="bg-text-item">LN4</span>
+      <span class="bg-text-item">2025</span>
+      <span class="bg-text-item">McLAREN</span>
+    </div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot" aria-hidden="true"></span>
+        <span class="eyebrow-tag">[SYS.ONLINE]</span>
+        <span class="eyebrow-season">SEASON 2025</span>
+        <span class="eyebrow-tag">[MCL39]</span>
+      </div>
+      <h1 class="hero-title" id="hero-title">
+        <span class="title-line" data-glitch="LANDO">LANDO</span>
+        <span class="title-line title-line--accent" data-glitch="NORRIS">NORRIS</span>
+      </h1>
+      <p class="hero-subtitle">
+        <span class="mono">//</span> McLaren Formula 1 Driver<br/>
+        <span class="mono">//</span> Neural interface active — telemetry streaming
+      </p>
+      <div class="hero-stats" aria-label="Season stats">
+        <div class="hero-stat" id="hero-stat-pos">
+          <span class="stat-num">4</span>
+          <span class="stat-label">RACE<br/>WINS</span>
+        </div>
+        <div class="hero-stat-divider" aria-hidden="true"></div>
+        <div class="hero-stat" id="hero-stat-pts">
+          <span class="stat-num">176</span>
+          <span class="stat-label">DRIVER<br/>POINTS</span>
+        </div>
+        <div class="hero-stat-divider" aria-hidden="true"></div>
+        <div class="hero-stat" id="hero-stat-grid">
+          <span class="stat-num">P2</span>
+          <span class="stat-label">CHAMP<br/>POS</span>
+        </div>
+      </div>
+      <div class="hero-btns">
+        <a href="#on-track" class="btn btn--primary" id="hero-btn-track">
+          <span class="btn-text">RACE DATA</span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#off-track" class="btn btn--ghost" id="hero-btn-off">
+          <span class="btn-text">OFF TRACK</span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-driver" aria-hidden="true">
+      <div class="driver-hud">
+        <div class="hud-corner tl"></div>
+        <div class="hud-corner tr"></div>
+        <div class="hud-corner bl"></div>
+        <div class="hud-corner br"></div>
+        <div class="hud-scan"></div>
+        <div class="hud-data">
+          <div class="hud-data-line"><span class="hud-key">DRS</span><span class="hud-val hud-val--on">ACTIVE</span></div>
+          <div class="hud-data-line"><span class="hud-key">SPD</span><span class="hud-val">327 KPH</span></div>
+          <div class="hud-data-line"><span class="hud-key">LAP</span><span class="hud-val">1:17.421</span></div>
+          <div class="hud-data-line"><span class="hud-key">TIRE</span><span class="hud-val hud-val--soft">SOFT</span></div>
+        </div>
+        <div class="driver-number-large">4</div>
+      </div>
+    </div>
+    <div class="hero-scroll-cue" aria-hidden="true">
+      <span class="mono scroll-label">SCROLL</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ===== MARQUEE ===== -->
+  <div class="marquee-wrap" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-list">
+        <span>LANDO NORRIS</span><span class="mx">✦</span>
+        <span>McLAREN F1</span><span class="mx">✦</span>
+        <span>SEASON 2025</span><span class="mx">✦</span>
+        <span>RACE WINNER</span><span class="mx">✦</span>
+        <span>LN4</span><span class="mx">✦</span>
+        <span>NEURAL GRID</span><span class="mx">✦</span>
+        <span>MCL39</span><span class="mx">✦</span>
+        <span>LANDO NORRIS</span><span class="mx">✦</span>
+        <span>McLAREN F1</span><span class="mx">✦</span>
+        <span>SEASON 2025</span><span class="mx">✦</span>
+        <span>RACE WINNER</span><span class="mx">✦</span>
+        <span>LN4</span><span class="mx">✦</span>
+        <span>NEURAL GRID</span><span class="mx">✦</span>
+        <span>MCL39</span><span class="mx">✦</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ON TRACK ===== -->
+  <section class="section on-track" id="on-track" aria-label="On Track section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow mono">[01] // ON_TRACK</span>
+        <h2 class="section-title">RACE<br/><span class="accent-text">TELEMETRY</span></h2>
+        <p class="section-desc">2025 Formula 1 World Championship. Live race data and season performance metrics streamed directly from the cockpit neural interface.</p>
+      </div>
+      <div class="race-grid" id="results" role="list" aria-label="Race results">
+        <article class="race-card race-card--win" id="race-bahrain" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.01</span>
+              <span class="race-result result--win">WIN</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">BAHRAIN GP</h3>
+              <p class="race-circuit mono">BAHRAIN INTERNATIONAL CIRCUIT</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P1</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P2</span></div>
+                <div class="race-stat-item"><span class="rs-label">FASTEST</span><span class="rs-val accent">1:32.608</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+        <article class="race-card race-card--p2" id="race-saudi" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.02</span>
+              <span class="race-result result--p2">P2</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">SAUDI ARABIAN GP</h3>
+              <p class="race-circuit mono">JEDDAH CORNICHE CIRCUIT</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P2</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P1</span></div>
+                <div class="race-stat-item"><span class="rs-label">FASTEST</span><span class="rs-val">1:28.931</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+        <article class="race-card race-card--win" id="race-australia" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.03</span>
+              <span class="race-result result--win">WIN</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">AUSTRALIAN GP</h3>
+              <p class="race-circuit mono">ALBERT PARK CIRCUIT</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P1</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P1</span></div>
+                <div class="race-stat-item"><span class="rs-label">GAP</span><span class="rs-val accent">+12.3s</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+        <article class="race-card race-card--p5" id="race-japan" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.04</span>
+              <span class="race-result result--p5">P5</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">JAPANESE GP</h3>
+              <p class="race-circuit mono">SUZUKA INTERNATIONAL CIRCUIT</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P5</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P3</span></div>
+                <div class="race-stat-item"><span class="rs-label">PTS</span><span class="rs-val">10</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+        <article class="race-card race-card--win" id="race-miami" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.06</span>
+              <span class="race-result result--win">WIN</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">MIAMI GP</h3>
+              <p class="race-circuit mono">MIAMI INTERNATIONAL AUTODROME</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P1</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P3</span></div>
+                <div class="race-stat-item"><span class="rs-label">FASTEST</span><span class="rs-val accent">1:27.241</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+        <article class="race-card race-card--p3" id="race-monaco" role="listitem">
+          <div class="race-card-inner">
+            <div class="race-card-header">
+              <span class="race-round mono">RD.08</span>
+              <span class="race-result result--p3">P3</span>
+            </div>
+            <div class="race-card-body">
+              <h3 class="race-name">MONACO GP</h3>
+              <p class="race-circuit mono">CIRCUIT DE MONACO</p>
+              <div class="race-stats">
+                <div class="race-stat-item"><span class="rs-label">POS</span><span class="rs-val">P3</span></div>
+                <div class="race-stat-item"><span class="rs-label">GRID</span><span class="rs-val">P4</span></div>
+                <div class="race-stat-item"><span class="rs-label">PTS</span><span class="rs-val">15</span></div>
+              </div>
+            </div>
+            <div class="race-card-glow" aria-hidden="true"></div>
+          </div>
+        </article>
+      </div>
+      <div class="section-cta-wrap">
+        <a href="#" class="btn btn--primary" id="all-results-btn">
+          <span class="btn-text">FULL SEASON DATA</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CHAMP BANNER ===== -->
+  <div class="champ-banner" aria-label="Championship standings">
+    <div class="container">
+      <div class="champ-inner">
+        <div class="champ-label mono">[WORLD.CHAMPIONSHIP.2025]</div>
+        <div class="champ-stats">
+          <div class="champ-stat" id="champ-wins"><span class="champ-num">4</span><span class="champ-desc">WINS</span></div>
+          <div class="champ-stat" id="champ-podiums"><span class="champ-num">9</span><span class="champ-desc">PODIUMS</span></div>
+          <div class="champ-stat" id="champ-poles"><span class="champ-num">3</span><span class="champ-desc">POLES</span></div>
+          <div class="champ-stat" id="champ-points"><span class="champ-num">176</span><span class="champ-desc">POINTS</span></div>
+          <div class="champ-stat" id="champ-pos"><span class="champ-num">P2</span><span class="champ-desc">STANDING</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OFF TRACK ===== -->
+  <section class="section off-track" id="off-track" aria-label="Off Track section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow mono">[02] // OFF_TRACK</span>
+        <h2 class="section-title">BEHIND THE<br/><span class="accent-text">VISOR</span></h2>
+        <p class="section-desc">Exclusive behind-the-scenes access. Life between the barriers — gaming, content, and the person behind LN4.</p>
+      </div>
+      <div class="content-grid">
+        <article class="content-card content-card--large" id="content-card-gaming">
+          <div class="content-card-inner">
+            <div class="content-tag mono">GAMING // STREAM</div>
+            <div class="content-media">
+              <div class="content-placeholder cp-gaming">
+                <div class="cp-icon">⬡</div>
+                <div class="cp-label">SIM RACING SESSION</div>
+              </div>
+            </div>
+            <div class="content-body">
+              <h3 class="content-title">NorrisTV — Sim Lap Record Attempt</h3>
+              <p class="content-desc">Watch Lando push the limits in iRacing — can he beat his own Monza sim record?</p>
+              <a href="#" class="content-link" id="gaming-link">WATCH NOW →</a>
+            </div>
+          </div>
+        </article>
+        <div class="content-sub-grid">
+          <article class="content-card" id="content-card-bts">
+            <div class="content-card-inner">
+              <div class="content-tag mono">BTS // PADDOCK</div>
+              <div class="content-media">
+                <div class="content-placeholder cp-paddock">
+                  <div class="cp-icon">◈</div>
+                  <div class="cp-label">PADDOCK ACCESS</div>
+                </div>
+              </div>
+              <div class="content-body">
+                <h3 class="content-title">Monaco Paddock Diary</h3>
+                <a href="#" class="content-link" id="paddock-link">READ MORE →</a>
+              </div>
+            </div>
+          </article>
+          <article class="content-card" id="content-card-training">
+            <div class="content-card-inner">
+              <div class="content-tag mono">TRAINING // GYM</div>
+              <div class="content-media">
+                <div class="content-placeholder cp-training">
+                  <div class="cp-icon">◆</div>
+                  <div class="cp-label">TRAINING CAMP</div>
+                </div>
+              </div>
+              <div class="content-body">
+                <h3 class="content-title">Pre-Season Prep 2025</h3>
+                <a href="#" class="content-link" id="training-link">READ MORE →</a>
+              </div>
+            </div>
+          </article>
+          <article class="content-card" id="content-card-collab">
+            <div class="content-card-inner">
+              <div class="content-tag mono">COLLAB // NORRIS</div>
+              <div class="content-media">
+                <div class="content-placeholder cp-collab">
+                  <div class="cp-icon">⬟</div>
+                  <div class="cp-label">COLLABORATION</div>
+                </div>
+              </div>
+              <div class="content-body">
+                <h3 class="content-title">Quadrant x McLaren Drop</h3>
+                <a href="#" class="content-link" id="collab-link">EXPLORE →</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MERCH ===== -->
+  <section class="section merch" id="merch" aria-label="Merchandise section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-eyebrow mono">[03] // MERCH.DROP</span>
+        <h2 class="section-title">GEAR<br/><span class="accent-text">UP</span></h2>
+        <p class="section-desc">Official LN4 merchandise. Limited drops, high-grade neural-thread apparel engineered for maximum output.</p>
+      </div>
+      <div class="merch-grid">
+        <article class="merch-card" id="merch-card-helmet">
+          <div class="merch-card-inner">
+            <div class="merch-tag">LIMITED</div>
+            <div class="merch-img">
+              <div class="merch-placeholder mp-helmet">
+                <div class="mp-shape"></div>
+                <span class="mp-label">HELMET 2025</span>
+              </div>
+            </div>
+            <div class="merch-body">
+              <h3 class="merch-name">2025 Race Helmet Replica</h3>
+              <div class="merch-price-row">
+                <span class="merch-price">$420</span>
+                <a href="#" class="merch-btn" id="merch-btn-helmet">ADD →</a>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="merch-card" id="merch-card-jacket">
+          <div class="merch-card-inner">
+            <div class="merch-tag merch-tag--new">NEW</div>
+            <div class="merch-img">
+              <div class="merch-placeholder mp-jacket">
+                <div class="mp-shape"></div>
+                <span class="mp-label">TEAM JACKET</span>
+              </div>
+            </div>
+            <div class="merch-body">
+              <h3 class="merch-name">McLaren Team Jacket 2025</h3>
+              <div class="merch-price-row">
+                <span class="merch-price">$185</span>
+                <a href="#" class="merch-btn" id="merch-btn-jacket">ADD →</a>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="merch-card" id="merch-card-cap">
+          <div class="merch-card-inner">
+            <div class="merch-tag merch-tag--sold">SOLD OUT</div>
+            <div class="merch-img">
+              <div class="merch-placeholder mp-cap">
+                <div class="mp-shape"></div>
+                <span class="mp-label">LN4 CAP</span>
+              </div>
+            </div>
+            <div class="merch-body">
+              <h3 class="merch-name">LN4 Neural Cap — Papaya</h3>
+              <div class="merch-price-row">
+                <span class="merch-price sold-out">$65</span>
+                <span class="merch-btn merch-btn--disabled">SOLD OUT</span>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="merch-card" id="merch-card-tshirt">
+          <div class="merch-card-inner">
+            <div class="merch-img">
+              <div class="merch-placeholder mp-tshirt">
+                <div class="mp-shape"></div>
+                <span class="mp-label">RACE TSHIRT</span>
+              </div>
+            </div>
+            <div class="merch-body">
+              <h3 class="merch-name">Grid Position Tee — Black</h3>
+              <div class="merch-price-row">
+                <span class="merch-price">$55</span>
+                <a href="#" class="merch-btn" id="merch-btn-tshirt">ADD →</a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="section-cta-wrap">
+        <a href="#" class="btn btn--primary" id="shop-all-btn">
+          <span class="btn-text">SHOP ALL</span>
+          <span class="btn-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NEWSLETTER ===== -->
+  <section class="section newsletter" id="newsletter" aria-label="Newsletter signup">
+    <div class="container">
+      <div class="newsletter-inner">
+        <div class="newsletter-glitch" aria-hidden="true">UPLINK</div>
+        <h2 class="newsletter-title">JOIN THE<br/><span class="accent-text">GRID</span></h2>
+        <p class="newsletter-desc mono">// Subscribe for race updates, merch drops &amp; exclusive cockpit access</p>
+        <form class="newsletter-form" id="newsletter-form" novalidate>
+          <div class="form-group">
+            <label for="email-input" class="visually-hidden">Email address</label>
+            <input type="email" id="email-input" name="email" placeholder="YOUR_EMAIL@GRID.COM" class="form-input" autocomplete="email" required />
+            <button type="submit" class="form-submit" id="newsletter-submit-btn">
+              <span>UPLINK</span><span class="btn-arrow">→</span>
+            </button>
+          </div>
+        </form>
+        <div class="newsletter-tags" aria-hidden="true">
+          <span class="ntag">RACE_ALERTS</span>
+          <span class="ntag">MERCH_DROPS</span>
+          <span class="ntag">BTS_CONTENT</span>
+          <span class="ntag">LIVE_DATA</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer" id="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="#" class="footer-brand-link" id="footer-brand-link">
+            <span class="brand-ln">LN</span><span class="brand-num">4</span>
+          </a>
+          <p class="footer-brand-desc mono">McLaren Formula 1 Driver<br/>Neural Grid 2025</p>
+        </div>
+        <nav class="footer-nav" aria-label="Footer navigation">
+          <div class="footer-nav-col">
+            <h3 class="footer-nav-label mono">RACING</h3>
+            <ul role="list">
+              <li><a href="#" id="footer-link-races">Race Results</a></li>
+              <li><a href="#" id="footer-link-standings">Standings</a></li>
+              <li><a href="#" id="footer-link-team">McLaren F1</a></li>
+            </ul>
+          </div>
+          <div class="footer-nav-col">
+            <h3 class="footer-nav-label mono">CONTENT</h3>
+            <ul role="list">
+              <li><a href="#" id="footer-link-videos">Videos</a></li>
+              <li><a href="#" id="footer-link-gaming">Gaming</a></li>
+              <li><a href="#" id="footer-link-news">News</a></li>
+            </ul>
+          </div>
+          <div class="footer-nav-col">
+            <h3 class="footer-nav-label mono">CONNECT</h3>
+            <ul role="list">
+              <li><a href="https://x.com/LandoNorris" target="_blank" rel="noopener noreferrer" id="footer-link-x">X (Twitter)</a></li>
+              <li><a href="https://www.instagram.com/landonorris/" target="_blank" rel="noopener noreferrer" id="footer-link-ig">Instagram</a></li>
+              <li><a href="https://www.youtube.com/@LandoNorris" target="_blank" rel="noopener noreferrer" id="footer-link-yt">YouTube</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy mono">© 2025 LANDO NORRIS // NEURAL GRID — FAN TRIBUTE SITE</span>
+        <div class="footer-legal">
+          <a href="#" id="footer-privacy">PRIVACY</a>
+          <a href="#" id="footer-terms">TERMS</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

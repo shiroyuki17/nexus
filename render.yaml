@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: nexus-arena
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install && npx prisma generate && npm run build --prefix frontend && mv frontend/dist public
+    startCommand: npx prisma db push && node backend/data/seed.js && node backend/server.js
+    envVars:
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DEFAULT_COMPANY_ID
+        value: demo-company
+      - key: DEFAULT_COMPANY_NAME
+        value: Demo Company
+      - key: CORS_ORIGIN
+        value: "*"
+    healthCheckPath: /api/health

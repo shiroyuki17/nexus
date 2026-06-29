@@ -1,0 +1,53 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "username": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "balance": {
+      "type": "number",
+      "default": 0
+    },
+    "points": {
+      "type": "number",
+      "default": 0
+    },
+    "rank": {
+      "type": "string",
+      "enum": [
+        "Bronze",
+        "Silver",
+        "Gold",
+        "Platinum",
+        "Diamond"
+      ],
+      "default": "Bronze"
+    },
+    "total_hours": {
+      "type": "number",
+      "default": 0
+    },
+    "current_pc": {
+      "type": "number"
+    },
+    "session_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "session_start": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "username"
+  ]
+}

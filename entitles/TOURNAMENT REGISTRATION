@@ -1,0 +1,32 @@
+{
+  "name": "TournamentRegistration",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "team_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "registered",
+        "checked_in",
+        "eliminated",
+        "winner"
+      ],
+      "default": "registered"
+    }
+  },
+  "required": [
+    "tournament_id",
+    "user_id"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "Game",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "FPS",
+        "MOBA",
+        "RPG",
+        "Battle Royale",
+        "Racing",
+        "Sports",
+        "Strategy",
+        "MMO"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "is_featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "popularity": {
+      "type": "number",
+      "default": 0
+    },
+    "min_specs": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "category"
+  ]
+}

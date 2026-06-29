@@ -1,0 +1,27 @@
+import { ButtonBase, Div, Span } from "./base";
+import { Input } from "./forms";
+import { Separator } from "./layout";
+
+export const Sidebar = Div;
+export const SidebarContent = Div;
+export const SidebarFooter = Div;
+export const SidebarGroup = Div;
+export const SidebarGroupContent = Div;
+export const SidebarGroupLabel = Div;
+export const SidebarHeader = Div;
+export const SidebarInput = Input;
+export const SidebarInset = Div;
+export const SidebarMenu = Div;
+export const SidebarMenuAction = ButtonBase;
+export const SidebarMenuBadge = Span;
+export const SidebarMenuButton = ButtonBase;
+export const SidebarMenuItem = Div;
+export const SidebarMenuSkeleton = Div;
+export const SidebarMenuSub = Div;
+export const SidebarMenuSubButton = ButtonBase;
+export const SidebarMenuSubItem = Div;
+export const SidebarProvider = ({ children }) => children;
+export const SidebarRail = Div;
+export const SidebarSeparator = Separator;
+export const SidebarTrigger = ButtonBase;
+export const useSidebar = () => ({ open: true, setOpen: () => {}, isMobile: false });

@@ -1,0 +1,90 @@
+import { ButtonBase, createPrimitive, Div, Span } from "./base";
+
+export const AlertDialog = Div;
+export const AlertDialogAction = ButtonBase;
+export const AlertDialogCancel = ButtonBase;
+export const AlertDialogContent = createPrimitive("div", "fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg");
+export const AlertDialogDescription = createPrimitive("p", "text-sm text-muted-foreground");
+export const AlertDialogFooter = createPrimitive("div", "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2");
+export const AlertDialogHeader = createPrimitive("div", "flex flex-col space-y-2 text-center sm:text-left");
+export const AlertDialogOverlay = createPrimitive("div", "fixed inset-0 z-50 bg-background/80");
+export const AlertDialogPortal = ({ children }) => children;
+export const AlertDialogTitle = createPrimitive("h2", "text-lg font-semibold");
+export const AlertDialogTrigger = ButtonBase;
+
+export const ContextMenu = Div;
+export const ContextMenuCheckboxItem = Div;
+export const ContextMenuContent = Div;
+export const ContextMenuGroup = Div;
+export const ContextMenuItem = Div;
+export const ContextMenuLabel = Div;
+export const ContextMenuPortal = ({ children }) => children;
+export const ContextMenuRadioGroup = Div;
+export const ContextMenuRadioItem = Div;
+export const ContextMenuSeparator = createPrimitive("div", "-mx-1 my-1 h-px bg-border");
+export const ContextMenuShortcut = Span;
+export const ContextMenuSub = Div;
+export const ContextMenuSubContent = Div;
+export const ContextMenuSubTrigger = Div;
+export const ContextMenuTrigger = Div;
+
+export const Dialog = Div;
+export const DialogClose = ButtonBase;
+export const DialogContent = AlertDialogContent;
+export const DialogDescription = AlertDialogDescription;
+export const DialogFooter = AlertDialogFooter;
+export const DialogHeader = AlertDialogHeader;
+export const DialogOverlay = AlertDialogOverlay;
+export const DialogPortal = AlertDialogPortal;
+export const DialogTitle = AlertDialogTitle;
+export const DialogTrigger = ButtonBase;
+
+export const Drawer = Div;
+export const DrawerClose = ButtonBase;
+export const DrawerContent = createPrimitive("div", "fixed inset-x-0 bottom-0 z-50 rounded-t-lg border bg-background p-6");
+export const DrawerDescription = AlertDialogDescription;
+export const DrawerFooter = Div;
+export const DrawerHeader = Div;
+export const DrawerOverlay = AlertDialogOverlay;
+export const DrawerPortal = AlertDialogPortal;
+export const DrawerTitle = AlertDialogTitle;
+export const DrawerTrigger = ButtonBase;
+
+export const DropdownMenu = Div;
+export const DropdownMenuCheckboxItem = Div;
+export const DropdownMenuContent = Div;
+export const DropdownMenuGroup = Div;
+export const DropdownMenuItem = Div;
+export const DropdownMenuLabel = Div;
+export const DropdownMenuPortal = ({ children }) => children;
+export const DropdownMenuRadioGroup = Div;
+export const DropdownMenuRadioItem = Div;
+export const DropdownMenuSeparator = createPrimitive("div", "-mx-1 my-1 h-px bg-border");
+export const DropdownMenuShortcut = Span;
+export const DropdownMenuSub = Div;
+export const DropdownMenuSubContent = Div;
+export const DropdownMenuSubTrigger = Div;
+export const DropdownMenuTrigger = ButtonBase;
+
+export const HoverCard = Div;
+export const HoverCardContent = Div;
+export const HoverCardTrigger = Div;
+export const Popover = Div;
+export const PopoverContent = Div;
+export const PopoverTrigger = ButtonBase;
+
+export const Sheet = Dialog;
+export const SheetClose = DialogClose;
+export const SheetContent = DialogContent;
+export const SheetDescription = DialogDescription;
+export const SheetFooter = DialogFooter;
+export const SheetHeader = DialogHeader;
+export const SheetOverlay = DialogOverlay;
+export const SheetPortal = DialogPortal;
+export const SheetTitle = DialogTitle;
+export const SheetTrigger = DialogTrigger;
+
+export const Tooltip = Div;
+export const TooltipContent = Div;
+export const TooltipProvider = ({ children }) => children;
+export const TooltipTrigger = ButtonBase;

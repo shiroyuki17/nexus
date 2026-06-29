@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  theme_background String   @default("#07070A")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  pcs                      Pc[]
+  games                    Game[]
+  products                 Product[]
+  reservations             Reservation[]
+  transactions             Transaction[]
+  food_orders              FoodOrder[]
+  tournaments              Tournament[]
+  tournament_registrations TournamentRegistration[]
+  user_profiles            UserProfile[]
+
+  @@map("companies")
+}
+
+model Pc {
+  id              String   @id @default(cuid())
+  company_id      String
+  pc_number       Int
+  device_type     String   @default("pc")
+  zone            String   @default("standard")
+  status          String   @default("available")
+  specs           String?
+  theme_background String?
+  image_url       String?
+  current_user_id String?
+  session_start   DateTime?
+  hourly_rate     Float    @default(5)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, pc_number])
+  @@index([company_id])
+  @@map("pcs")
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  company_id  String
+  title       String
+  category    String
+  description String?
+  image_url   String?
+  is_featured Boolean  @default(false)
+  popularity  Int      @default(0)
+  min_specs   String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@map("games")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  company_id  String
+  name        String
+  category    String   @default("drinks")
+  price       Float
+  description String?
+  image_url   String?
+  available   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@map("products")
+}
+
+model Reservation {
+  id             String   @id @default(cuid())
+  company_id     String
+  user_id        String
+  user_name      String?
+  pc_id          String
+  pc_number      Int?
+  zone           String?
+  date           String
+  start_time     String
+  end_time       String?
+  duration_hours Float
+  status         String   @default("pending")
+  total_cost     Float?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@index([company_id, pc_id])
+  @@map("reservations")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  company_id    String
+  user_id       String
+  type          String
+  amount        Float
+  description   String?
+  balance_after Float?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@map("transactions")
+}
+
+model FoodOrder {
+  id         String   @id @default(cuid())
+  company_id String
+  user_id    String
+  user_name  String?
+  items      Json
+  total      Float
+  status     String   @default("pending")
+  pc_number  Int?
+  notes      String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@index([company_id, pc_number])
+  @@map("food_orders")
+}
+
+model Tournament {
+  id                   String   @id @default(cuid())
+  company_id            String
+  title                String
+  game                 String
+  description          String?
+  date                 String
+  time                 String?
+  max_participants     Int?
+  current_participants Int      @default(0)
+  prize_pool           String?
+  entry_fee            Float    @default(0)
+  status               String   @default("upcoming")
+  image_url            String?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@map("tournaments")
+}
+
+model TournamentRegistration {
+  id            String   @id @default(cuid())
+  company_id     String
+  tournament_id String
+  user_id       String
+  user_name     String?
+  team_name     String?
+  status        String   @default("registered")
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@index([company_id])
+  @@index([company_id, tournament_id])
+  @@map("tournament_registrations")
+}
+
+model UserProfile {
+  id             String   @id @default(cuid())
+  company_id      String
+  user_id        String
+  username       String
+  role           String   @default("user")
+  avatar_url     String?
+  balance        Float    @default(0)
+  points         Int      @default(0)
+  rank           String   @default("Bronze")
+  total_hours    Float    @default(0)
+  current_pc     Int?
+  session_active Boolean  @default(false)
+  session_start  DateTime?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  company Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, user_id])
+  @@index([company_id])
+  @@map("user_profiles")
+}

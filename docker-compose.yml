@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: nexus-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: nexus
+      MYSQL_USER: nexus
+      MYSQL_PASSWORD: nexus
+      MYSQL_ROOT_PASSWORD: nexus_root
+    ports:
+      - "3306:3306"
+    volumes:
+      - nexus_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -unexus -pnexus --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PORT: 4000
+      DATABASE_URL: mysql://nexus:nexus@mysql:3306/nexus
+      CORS_ORIGIN: http://localhost:5173
+      DEFAULT_COMPANY_ID: demo-company
+      DEFAULT_COMPANY_NAME: Demo Company
+    ports:
+      - "4000:4000"
+    command: sh -c "npx prisma db push && node backend/data/seed.js && node backend/server.js"
+
+volumes:
+  nexus_mysql_data:

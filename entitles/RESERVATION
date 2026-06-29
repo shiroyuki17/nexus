@@ -1,0 +1,60 @@
+{
+  "name": "Reservation",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "pc_id": {
+      "type": "string"
+    },
+    "pc_number": {
+      "type": "number"
+    },
+    "zone": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "vip",
+        "tournament"
+      ]
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "start_time": {
+      "type": "string"
+    },
+    "end_time": {
+      "type": "string"
+    },
+    "duration_hours": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "active",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "total_cost": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "user_id",
+    "pc_id",
+    "date",
+    "start_time",
+    "duration_hours"
+  ]
+}
