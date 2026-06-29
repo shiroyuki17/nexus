@@ -70,10 +70,10 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-  			heading: ['var(--font-heading)'],
-  			body: ['var(--font-body)'],
-  			display: ['var(--font-display)'],
-  			mono: ['var(--font-mono)']
+  			heading: ['Sora', 'sans-serif'],
+  			body:    ['Inter', 'sans-serif'],
+  			display: ['Sora', 'sans-serif'],
+  			mono:    ['JetBrains Mono', 'monospace']
   		},
   		keyframes: {
   			'accordion-down': {
