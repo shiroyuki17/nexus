@@ -109,6 +109,63 @@ export default function Admin() {
   const [editData, setEditData]   = useState({});
   const [editLoading, setEditLoading] = useState(false);
 
+  // Create modal state
+  const [createType, setCreateType] = useState(null); // 'tournament', 'game', 'pc', 'product'
+  const [createData, setCreateData] = useState({});
+  const [createLoading, setCreateLoading] = useState(false);
+
+  const handleCreateSubmit = async () => {
+    if (!createType) return;
+    setCreateLoading(true);
+    try {
+      let dataToPost = { ...createData };
+      // Auto-assign company_id if needed
+      dataToPost.company_id = "demo-company";
+
+      if (createType === "tournament") {
+        dataToPost.max_participants = parseInt(dataToPost.max_participants || 10, 10);
+        dataToPost.entry_fee = parseFloat(dataToPost.entry_fee || 0);
+        dataToPost.current_participants = 0;
+        dataToPost.status = "upcoming";
+      } else if (createType === "game") {
+        dataToPost.popularity = parseInt(dataToPost.popularity || 50, 10);
+        dataToPost.is_featured = !!dataToPost.is_featured;
+      } else if (createType === "pc") {
+        dataToPost.pc_number = parseInt(dataToPost.pc_number || 1, 10);
+        dataToPost.hourly_rate = parseFloat(dataToPost.hourly_rate || 3000);
+        dataToPost.status = "available";
+      } else if (createType === "product") {
+        dataToPost.price = parseFloat(dataToPost.price || 0);
+        dataToPost.available = true;
+      }
+
+      await entities[createType].create(dataToPost);
+      setCreateType(null);
+      setCreateData({});
+      [profiles, orders, tournaments, games, pcs, products].forEach(l => l.refresh?.());
+    } catch (err) {
+      alert("Үүсгэхэд алдаа гарлаа: " + err.message);
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const handleUpgradeUser = async (userProf) => {
+    if (!userProf) return;
+    if (!confirm(`${userProf.username} хэрэглэгчийн эрхийг ГИШҮҮН (member) болгож ахиулах уу?`)) return;
+    try {
+      await entities.userProfile.update(userProf.id, {
+        role: "member",
+        points: (userProf.points || 0) + 100 // 100 bonus XP points
+      });
+      setSelectedUser(null);
+      profiles.refresh();
+      alert("Хэрэглэгчийн эрхийг ГИШҮҮН болгож амжилттай ахиуллаа!");
+    } catch (err) {
+      alert("Эрх ахиулахад алдаа: " + err.message);
+    }
+  };
+
   // Start Session
   const handleStartSession = async (pc, userProf, hours) => {
     if (!pc || !userProf || !hours) return;
@@ -212,10 +269,14 @@ export default function Admin() {
   const filteredProfiles = useMemo(() => {
     if (!profiles.data) return [];
     const q = search.toLowerCase();
-    return profiles.data.filter(p =>
-      p.username?.toLowerCase().includes(q) || p.user_id?.toLowerCase().includes(q)
-    );
-  }, [profiles.data, search]);
+    return profiles.data.filter(p => {
+      const matchesSearch = p.username?.toLowerCase().includes(q) || p.user_id?.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
+      if (userFilter === "member") return p.role === "member" || p.role === "admin";
+      if (userFilter === "guest") return p.role === "user";
+      return true;
+    });
+  }, [profiles.data, search, userFilter]);
 
   // Customer top-up
   const handleTopUp = async () => {
@@ -546,15 +607,38 @@ export default function Admin() {
       {activeTab === "customers" && (
         <div className="grid lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Хэрэглэгч хайх..."
-                className="w-full bg-card border border-border hover:border-cyan-500/40 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-foreground focus:outline-none transition-colors"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Хэрэглэгч хайх..."
+                  className="w-full bg-card border border-border hover:border-cyan-500/40 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2.5 text-xs font-mono text-foreground focus:outline-none transition-colors"
+                />
+              </div>
+
+              {/* Quick Filters */}
+              <div className="flex gap-1 p-1 bg-muted/30 border border-border/40 rounded-xl">
+                {[
+                  { id: "all",    label: "Бүгд" },
+                  { id: "member", label: "Гишүүд" },
+                  { id: "guest",  label: "Зочид" }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setUserFilter(f.id)}
+                    className={`px-3 py-1 text-[10px] font-black uppercase rounded-lg transition-all ${
+                      userFilter === f.id ? "bg-cyan-500/10 text-cyan-400" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
             {profiles.isLoading ? (
               <div className="py-16 flex justify-center"><div className="w-7 h-7 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
             ) : filteredProfiles.length === 0 ? (
@@ -566,6 +650,7 @@ export default function Admin() {
               <div className="space-y-2">
                 {filteredProfiles.map(p => {
                   const isSelected = selectedUser?.id === p.id;
+                  const isUserMember = p.role === "member" || p.role === "admin";
                   return (
                     <div key={p.id} className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all cyber-hud-card ${isSelected ? "border-cyan-500/50 bg-cyan-500/5" : ""}`}>
                       <button className="flex items-center gap-4 flex-1 text-left" onClick={() => setSelectedUser(isSelected ? null : p)}>
@@ -573,8 +658,15 @@ export default function Admin() {
                           <span className="text-xs font-black text-purple-300">{p.username?.[0]?.toUpperCase()}</span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-foreground">{p.username}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold text-foreground">{p.username}</p>
+                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.2 rounded ${
+                              isUserMember ? "text-cyan-400 bg-cyan-500/10 border border-cyan-500/20" : "text-muted-foreground bg-muted/30 border border-border/40"
+                            }`}>
+                              {isUserMember ? "MEMBER" : "GUEST"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
                             <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground font-mono">{p.rank || "Bronze"}</span>
                             {p.session_active && <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-0.5"><CircleDot className="w-2.5 h-2.5 animate-pulse" /> ОНЛАЙН</span>}
                           </div>
@@ -594,6 +686,7 @@ export default function Admin() {
               </div>
             )}
           </div>
+
 
           <div>
             {selectedUser ? (
@@ -635,7 +728,23 @@ export default function Admin() {
                     </button>
                   </form>
                 </div>
-                <button onClick={() => setSelectedUser(null)} className="w-full text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">Цуцлах</button>
+
+                {/* Upgrade to Member Option if they are guest */}
+                {selectedUser.role !== "member" && selectedUser.role !== "admin" && (
+                  <div className="pt-2 border-t border-border/40 space-y-2">
+                    <p className="text-[9px] font-black uppercase tracking-wider text-yellow-400 font-mono flex items-center gap-1">
+                      <Crown className="w-3.5 h-3.5 text-yellow-400 animate-pulse" /> ГИШҮҮНЧЛЭЛТЭЙ БОЛГОХ
+                    </p>
+                    <button 
+                      onClick={() => handleUpgradeUser(selectedUser)}
+                      className="w-full py-2 bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/20 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+                    >
+                      ЭРХ АХИУЛАХ
+                    </button>
+                  </div>
+                )}
+
+                <button onClick={() => setSelectedUser(null)} className="w-full text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors pt-2">Цуцлах</button>
               </div>
             ) : (
               <div className="py-16 border border-dashed border-border/60 rounded-2xl text-center">
@@ -723,9 +832,17 @@ export default function Admin() {
             <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground font-mono">
               Нийт: {tournaments.data?.length || 0} тэмцээн
             </p>
-            <button onClick={tournaments.refresh} className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => { setCreateType("tournament"); setCreateData({ title: "", game: "", date: "", time: "", max_participants: 10, prize_pool: "", entry_fee: 0, image_url: "" }); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase rounded-xl transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" /> Шинэ тэмцээн үүсгэх
+              </button>
+              <button onClick={tournaments.refresh} className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
+              </button>
+            </div>
           </div>
           {tournaments.isLoading ? (
             <div className="py-16 flex justify-center"><div className="w-7 h-7 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
@@ -772,9 +889,17 @@ export default function Admin() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground font-mono">{games.data?.length || 0} тоглоом</p>
-            <button onClick={games.refresh} className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => { setCreateType("game"); setCreateData({ title: "", category: "Action", description: "", image_url: "", is_featured: false, popularity: 80, min_specs: "" }); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase rounded-xl transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" /> Шинэ тоглоом нэмэх
+              </button>
+              <button onClick={games.refresh} className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
+              </button>
+            </div>
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {(games.data || []).map(g => (
@@ -1003,6 +1128,60 @@ export default function Admin() {
                 <button onClick={() => setEditItem(null)} className="flex-1 py-2 border border-border/60 rounded-xl text-xs font-black uppercase text-muted-foreground hover:text-foreground transition-all">Цуцлах</button>
                 <button onClick={saveEdit} disabled={editLoading} className="flex-1 py-2 bg-cyan-500/15 border border-cyan-500/40 rounded-xl text-xs font-black uppercase text-cyan-400 hover:bg-cyan-500/25 transition-all disabled:opacity-40">
                   {editLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin mx-auto" /> : "Хадгалах"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ===== CREATE MODAL ===== */}
+      <AnimatePresence>
+        {createType && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+            onClick={() => setCreateType(null)}
+          >
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card border border-cyan-500/20 rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[80vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-display font-black text-sm text-foreground uppercase tracking-wider">
+                  Шинэ {createType === "tournament" ? "Тэмцээн" : createType === "game" ? "Тоглоом" : createType} Нэмэх
+                </h3>
+                <button onClick={() => setCreateType(null)} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+              </div>
+              
+              <div className="space-y-3">
+                {Object.entries(createData).map(([key, val]) => (
+                  <div key={key} className="space-y-1">
+                    <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground font-mono">{key.replace(/_/g," ")}</label>
+                    {typeof val === "boolean" ? (
+                      <button 
+                        type="button"
+                        onClick={() => setCreateData(d => ({ ...d, [key]: !d[key] }))}
+                        className={`flex items-center gap-2 px-3 py-1.5 border rounded-xl text-xs font-bold transition-all ${createData[key] ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10" : "border-border/60 text-muted-foreground"}`}
+                      >
+                        {createData[key] ? <CheckCircle className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                        {createData[key] ? "Тийм" : "Үгүй"}
+                      </button>
+                    ) : (
+                      <input
+                        value={createData[key] ?? ""}
+                        onChange={e => setCreateData(d => ({ ...d, [key]: e.target.value }))}
+                        className="w-full h-9 bg-background border border-border/60 rounded-xl px-3 text-xs font-mono text-foreground focus:outline-none focus:border-cyan-500/50 transition-colors"
+                        placeholder={`${key.replace(/_/g," ")} оруулах...`}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => setCreateType(null)} className="flex-1 py-2 border border-border/60 rounded-xl text-xs font-black uppercase text-muted-foreground hover:text-foreground transition-all">Цуцлах</button>
+                <button onClick={handleCreateSubmit} disabled={createLoading} className="flex-1 py-2 bg-cyan-500/15 border border-cyan-500/40 rounded-xl text-xs font-black uppercase text-cyan-400 hover:bg-cyan-500/25 transition-all disabled:opacity-40">
+                  {createLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin mx-auto" /> : "Үүсгэх"}
                 </button>
               </div>
             </motion.div>
