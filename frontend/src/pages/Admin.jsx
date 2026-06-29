@@ -103,6 +103,7 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [topUpAmt,     setTopUpAmt]     = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
+  const [userFilter,   setUserFilter]   = useState("all"); // 'all', 'member', 'guest'
 
   // Edit modal state
   const [editItem, setEditItem]   = useState(null);
