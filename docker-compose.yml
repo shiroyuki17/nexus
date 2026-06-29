@@ -1,19 +1,18 @@
 services:
-  mysql:
-    image: mysql:8.4
-    container_name: nexus-mysql
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus-postgres
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: nexus
-      MYSQL_USER: nexus
-      MYSQL_PASSWORD: nexus
-      MYSQL_ROOT_PASSWORD: nexus_root
+      POSTGRES_DB: nexus
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: nexus
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - nexus_mysql_data:/var/lib/mysql
+      - nexus_pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -unexus -pnexus --silent"]
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -25,11 +24,11 @@ services:
     container_name: nexus-api
     restart: unless-stopped
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     environment:
       PORT: 4000
-      DATABASE_URL: mysql://nexus:nexus@mysql:3306/nexus
+      DATABASE_URL: postgresql://nexus:nexus@postgres:5432/nexus
       CORS_ORIGIN: http://localhost:5173
       DEFAULT_COMPANY_ID: demo-company
       DEFAULT_COMPANY_NAME: Demo Company
@@ -38,4 +37,4 @@ services:
     command: sh -c "npx prisma db push && node backend/data/seed.js && node backend/server.js"
 
 volumes:
-  nexus_mysql_data:
+  nexus_pg_data:
