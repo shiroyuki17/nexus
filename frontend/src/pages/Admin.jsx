@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import PageShell from "./PageShell";
 import { entities, listSchemas } from "@/api/entities";
 import { useEntityList } from "@/hooks/useEntityList";
@@ -7,18 +7,22 @@ import {
   Users, ChefHat, Receipt, Database, Search, Wallet, CircleDot,
   ChevronRight, RefreshCw, Trophy, Gamepad2, Monitor, Package,
   Plus, Trash2, Edit3, CheckCircle, X, Star, Shield, Zap,
-  TrendingUp, Clock, UserCheck
+  TrendingUp, Clock, UserCheck, TimerReset, PlayCircle, StopCircle,
+  CreditCard, Timer
 } from "lucide-react";
 
+const HOURLY_RATE = 3000; // ₮ per hour
+
 const TABS = [
-  { id: "customers",    label: "Хэрэглэгчид",   icon: Users        },
-  { id: "kitchen",      label: "Захиалгын Дараалал", icon: ChefHat  },
-  { id: "tournaments",  label: "Тэмцээнүүд",    icon: Trophy       },
-  { id: "games",        label: "Тоглоомнууд",   icon: Gamepad2     },
-  { id: "pcs",          label: "PC Удирдлага",   icon: Monitor      },
-  { id: "products",     label: "Бараа/Меню",     icon: Package      },
-  { id: "ledger",       label: "Гүйлгээ",        icon: Receipt      },
-  { id: "system",       label: "Систем",          icon: Database     },
+  { id: "time",         label: "Цаг Удирдлага",   icon: Timer        },
+  { id: "customers",    label: "Хэрэглэгчид",      icon: Users        },
+  { id: "kitchen",      label: "Захиалгын Дараалал", icon: ChefHat   },
+  { id: "tournaments",  label: "Тэмцээнүүд",       icon: Trophy       },
+  { id: "games",        label: "Тоглоомнууд",      icon: Gamepad2     },
+  { id: "pcs",          label: "PC Удирдлага",      icon: Monitor      },
+  { id: "products",     label: "Бараа/Меню",        icon: Package      },
+  { id: "ledger",       label: "Гүйлгээ",           icon: Receipt      },
+  { id: "system",       label: "Систем",             icon: Database     },
 ];
 
 const ORDER_ACTIONS = {
@@ -67,7 +71,7 @@ const TOUR_STATUS_COLORS = {
 const TOUR_STATUS_LABELS = { upcoming: "Удахгүй", active: "Явагдаж байна", completed: "Дууссан" };
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState("customers");
+  const [activeTab, setActiveTab] = useState("time");
 
   // Data
   const profiles     = useEntityList(() => entities.userProfile.list());
@@ -79,6 +83,21 @@ export default function Admin() {
   const pcs          = useEntityList(() => entities.pc.list());
   const products     = useEntityList(() => entities.product.list());
 
+  // Time Management States
+  const [selectedPc, setSelectedPc] = useState(null);
+  const [sessionUser, setSessionUser] = useState(null);
+  const [sessionHours, setSessionHours] = useState("1");
+  const [timeSearch, setTimeSearch] = useState("");
+  const [timeTick, setTimeTick] = useState(0);
+
+  // Tick timer every second for active sessions
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeTick(t => t + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Customer state
   const [search,       setSearch]       = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -89,6 +108,106 @@ export default function Admin() {
   const [editItem, setEditItem]   = useState(null);
   const [editData, setEditData]   = useState({});
   const [editLoading, setEditLoading] = useState(false);
+
+  // Start Session
+  const handleStartSession = async (pc, userProf, hours) => {
+    if (!pc || !userProf || !hours) return;
+    const hrVal = parseFloat(hours);
+    if (isNaN(hrVal) || hrVal <= 0) {
+      alert("Цагийн утга буруу байна.");
+      return;
+    }
+    const cost = hrVal * HOURLY_RATE;
+
+    if ((userProf.balance || 0) < cost) {
+      alert(`Хэрэглэгчийн үлдэгдэл хүрэлцэхгүй байна. Шаардлагатай: ₮${cost.toLocaleString()}`);
+      return;
+    }
+
+    try {
+      // 1. Deduct balance from user
+      const newBalance = (userProf.balance || 0) - cost;
+      await entities.userProfile.update(userProf.id, {
+        balance: newBalance,
+        session_active: true,
+        session_start: new Date().toISOString(),
+        current_pc: pc.pc_number
+      });
+
+      // 2. Set PC status to occupied
+      await entities.pc.update(pc.id, {
+        status: "occupied",
+        current_user_id: userProf.user_id || userProf.id,
+        session_start: new Date().toISOString()
+      });
+
+      // 3. Create transaction log
+      await entities.transaction.create({
+        user_id: userProf.user_id || userProf.id,
+        type: "session",
+        amount: -cost,
+        description: `PC-${pc.pc_number} дээр ${hrVal} цагийн тоглолт эхлүүлэв`,
+        balance_after: newBalance
+      });
+
+      // Reset
+      setSelectedPc(null);
+      setSessionUser(null);
+      setSessionHours("1");
+      setTimeSearch("");
+
+      // Refresh
+      pcs.refresh();
+      profiles.refresh();
+      transactions.refresh();
+    } catch (err) {
+      alert("Цаг эхлүүлэхэд алдаа гарлаа: " + err.message);
+    }
+  };
+
+  // Stop Session
+  const handleStopSession = async (pc) => {
+    if (!pc || !pc.current_user_id) return;
+    if (!confirm(`PC-${pc.pc_number} дээрх цагийг зогсоох уу?`)) return;
+
+    try {
+      // Find the user profile active on this PC
+      const userProf = profiles.data?.find(p => p.user_id === pc.current_user_id || p.id === pc.current_user_id);
+      
+      if (userProf) {
+        // Stop user session
+        await entities.userProfile.update(userProf.id, {
+          session_active: false,
+          session_start: null,
+          current_pc: null
+        });
+      }
+
+      // Free the PC
+      await entities.pc.update(pc.id, {
+        status: "available",
+        current_user_id: null,
+        session_start: null
+      });
+
+      // Create transaction log for session end
+      if (userProf) {
+        await entities.transaction.create({
+          user_id: userProf.user_id || userProf.id,
+          type: "session",
+          amount: 0,
+          description: `PC-${pc.pc_number} дээрх тоглолт зогсов`,
+          balance_after: userProf.balance
+        });
+      }
+
+      pcs.refresh();
+      profiles.refresh();
+      transactions.refresh();
+    } catch (err) {
+      alert("Цаг зогсооход алдаа гарлаа: " + err.message);
+    }
+  };
 
   const filteredProfiles = useMemo(() => {
     if (!profiles.data) return [];
@@ -208,6 +327,220 @@ export default function Admin() {
           );
         })}
       </div>
+
+      {/* ===== TIME MANAGEMENT ===== */}
+      {activeTab === "time" && (
+        <div className="grid lg:grid-cols-3 gap-6 fade-up">
+          {/* PC Grid Area */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-black text-xs uppercase tracking-widest text-foreground flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-cyan-400" /> СТАНЦУУДЫН ЦАГ ХЯНАЛТ
+              </h3>
+              <button onClick={pcs.refresh} className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-muted-foreground hover:text-foreground transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
+              </button>
+            </div>
+
+            {pcs.isLoading ? (
+              <div className="py-16 flex justify-center"><div className="w-7 h-7 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" /></div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {(pcs.data || []).map(pc => {
+                  const isOccupied = pc.status === "occupied";
+                  const activeUser = isOccupied ? profiles.data?.find(p => p.user_id === pc.current_user_id || p.id === pc.current_user_id) : null;
+                  
+                  // Calculate elapsed and remaining
+                  let elapsedStr = "00:00:00";
+                  let progressPercent = 0;
+                  if (isOccupied && pc.session_start) {
+                    const elapsedSecs = Math.floor((Date.now() - new Date(pc.session_start).getTime()) / 1000);
+                    const h = Math.floor(elapsedSecs / 3600);
+                    const m = Math.floor((elapsedSecs % 3600) / 60);
+                    const s = elapsedSecs % 60;
+                    elapsedStr = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+                    
+                    // Let's assume average session is 3 hours for progress bar or just show elapsed
+                    progressPercent = Math.min(100, (elapsedSecs / (3 * 3600)) * 100);
+                  }
+
+                  const isSelected = selectedPc?.id === pc.id;
+
+                  return (
+                    <div
+                      key={pc.id}
+                      onClick={() => !isOccupied && setSelectedPc(pc)}
+                      className={`relative cursor-pointer p-4 rounded-xl transition-all flex flex-col justify-between h-36 ${
+                        isOccupied 
+                          ? "cyber-hud-card border-purple-500/20" 
+                          : isSelected
+                            ? "border-cyan-500 bg-cyan-500/5 shadow-[0_0_15px_rgba(3,210,255,0.15)]"
+                            : "border-border/60 bg-card/40 hover:bg-card/80 hover:border-cyan-500/30 border border-dashed"
+                      }`}
+                    >
+                      {/* Top Header */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black font-mono tracking-widest text-muted-foreground">
+                          {pc.device_type === "notebook" ? "LAPTOP" : "PC"}-{String(pc.pc_number).padStart(2, "0")}
+                        </span>
+                        <span className={`w-2 h-2 rounded-full ${isOccupied ? "bg-purple-500 animate-pulse" : "bg-cyan-500"}`} />
+                      </div>
+
+                      {/* Middle Content */}
+                      <div className="my-2">
+                        {isOccupied ? (
+                          <div className="space-y-1">
+                            <p className="text-xs font-bold text-foreground truncate">{activeUser?.username || "Зочин"}</p>
+                            <div className="flex items-center gap-1.5 text-[10px] font-mono text-purple-300">
+                              <Clock className="w-3 h-3 text-purple-400" />
+                              {elapsedStr}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Сул байна</p>
+                        )}
+                      </div>
+
+                      {/* Bottom / Progress */}
+                      <div>
+                        {isOccupied ? (
+                          <div className="space-y-2">
+                            <div className="h-1 w-full bg-muted/40 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-400 rounded-full" style={{ width: `${progressPercent}%` }} />
+                            </div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleStopSession(pc); }}
+                              className="w-full py-1 border border-rose-500/20 text-rose-400 text-[9px] font-black uppercase rounded-lg hover:bg-rose-500/10 transition-colors"
+                            >
+                              Зогсоох
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest">+ Цаг өгөх</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Assign Session Workspace */}
+          <div className="space-y-4">
+            <h3 className="font-display font-black text-xs uppercase tracking-widest text-foreground flex items-center gap-2">
+              <Timer className="w-4 h-4 text-purple-400" /> ЦАГ ОЛГОХ ХЭСЭГ
+            </h3>
+
+            {selectedPc ? (
+              <div className="cyber-hud-card rounded-xl p-5 space-y-5">
+                <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                  <div>
+                    <h4 className="font-display font-black text-sm text-cyan-400">
+                      {selectedPc.device_type === "notebook" ? "LAPTOP" : "PC"}-{String(selectedPc.pc_number).padStart(2, "0")}
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground font-mono uppercase">{selectedPc.zone} зона • ₮{selectedPc.hourly_rate?.toLocaleString()}/ц</p>
+                  </div>
+                  <button onClick={() => { setSelectedPc(null); setSessionUser(null); }} className="text-muted-foreground hover:text-foreground">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 1: Select User */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground font-mono">1. Хэрэглэгч сонгох</label>
+                  {sessionUser ? (
+                    <div className="flex items-center justify-between p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-xl">
+                      <div>
+                        <p className="text-xs font-bold text-foreground">{sessionUser.username}</p>
+                        <p className="text-[9px] text-muted-foreground font-mono">Үлдэгдэл: ₮{(sessionUser.balance || 0).toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => setSessionUser(null)} className="text-[10px] font-bold text-rose-400 hover:underline">Хасах</button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                        <input
+                          value={timeSearch}
+                          onChange={e => setTimeSearch(e.target.value)}
+                          placeholder="Хэрэглэгч хайх..."
+                          className="w-full bg-background border border-border hover:border-cyan-500/40 focus:border-cyan-400 rounded-xl pl-9 pr-4 py-2 text-xs font-mono text-foreground focus:outline-none transition-colors"
+                        />
+                      </div>
+                      <div className="max-h-40 overflow-y-auto border border-border/40 rounded-xl divide-y divide-border/20 bg-background/20">
+                        {profiles.data?.filter(p => !p.session_active && p.username?.toLowerCase().includes(timeSearch.toLowerCase())).map(p => (
+                          <button
+                            key={p.id}
+                            onClick={() => setSessionUser(p)}
+                            className="w-full text-left p-2.5 hover:bg-muted/30 transition-colors flex justify-between items-center text-xs"
+                          >
+                            <span className="font-bold text-foreground">{p.username}</span>
+                            <span className="text-[10px] font-mono text-cyan-400">₮{(p.balance || 0).toLocaleString()}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 2: Pre-paid Hours */}
+                <div className="space-y-2">
+                  <label className="text-[9px] font-black uppercase tracking-wider text-muted-foreground font-mono">2. Тоглох цаг</label>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {["1", "2", "3", "5"].map(h => (
+                      <button
+                        key={h}
+                        onClick={() => setSessionHours(h)}
+                        className={`py-1.5 text-xs font-black font-mono border rounded-xl transition-all ${
+                          sessionHours === h 
+                            ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-400" 
+                            : "border-border/80 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {h}ц
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="number"
+                    value={sessionHours}
+                    onChange={e => setSessionHours(e.target.value)}
+                    placeholder="Өөр цаг оруулах..."
+                    className="w-full bg-background border border-border hover:border-cyan-500/40 focus:border-cyan-400 rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none transition-colors"
+                  />
+                </div>
+
+                {/* Price summary */}
+                <div className="bg-background/40 border border-border/60 rounded-xl p-3 space-y-1">
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-muted-foreground">Нэг цагийн тариф:</span>
+                    <span className="text-foreground">₮{HOURLY_RATE.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs font-mono border-t border-border/20 pt-2 font-black">
+                    <span className="text-foreground">Нийт төлбөр:</span>
+                    <span className="text-cyan-400">₮{(parseFloat(sessionHours || 0) * HOURLY_RATE).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                {/* Activate */}
+                <button
+                  onClick={() => handleStartSession(selectedPc, sessionUser, sessionHours)}
+                  disabled={!sessionUser || !sessionHours}
+                  className="w-full py-2.5 bg-cyan-500/10 border border-cyan-500/40 text-cyan-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-cyan-500/20 transition-all disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center gap-2"
+                >
+                  <PlayCircle className="w-4 h-4" /> ЦАГ ИДЭВХЖҮҮЛЭХ
+                </button>
+              </div>
+            ) : (
+              <div className="py-16 border border-dashed border-border/60 rounded-2xl text-center">
+                <Monitor className="w-8 h-8 mx-auto text-muted-foreground mb-2 animate-pulse" />
+                <p className="text-xs text-muted-foreground font-mono uppercase">Эхлээд станц сонгоно уу</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ===== CUSTOMERS ===== */}
       {activeTab === "customers" && (
