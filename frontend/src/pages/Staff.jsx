@@ -51,8 +51,9 @@ const TABS = [
 
 function StatCard({ icon: Icon, label, value, color }) {
   return (
-    <div className="bg-card border border-border/60 rounded-xl p-4 flex items-center gap-4">
+    <div className="cyber-hud-card rounded-xl p-4 flex items-center gap-4">
       <div className={`w-10 h-10 rounded-xl bg-background/60 border border-border/40 flex items-center justify-center ${color}`}>
+
         <Icon className="w-5 h-5" />
       </div>
       <div>
@@ -166,7 +167,7 @@ export default function Staff() {
                 {activeOrders.slice(0, 6).map(order => {
                   const action = ORDER_ACTIONS[order.status];
                   return (
-                    <div key={order.id} className="bg-card border border-border/80 rounded-xl p-4 space-y-3">
+                    <div key={order.id} className="cyber-hud-card rounded-xl p-4 space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-[10px] font-black text-muted-foreground font-mono">#{order.id?.slice(0, 8)}</p>
@@ -228,7 +229,7 @@ export default function Staff() {
                 const action = ORDER_ACTIONS[order.status];
                 const isActive = !["delivered","cancelled"].includes(order.status);
                 return (
-                  <div key={order.id} className={`bg-card border rounded-2xl p-4 flex flex-col gap-3 transition-all ${isActive ? "border-border" : "border-border/40 opacity-55"}`}>
+                  <div key={order.id} className={`cyber-hud-card rounded-2xl p-4 flex flex-col gap-3 transition-all ${isActive ? "" : "opacity-55"}`}>
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[10px] font-black text-muted-foreground font-mono">#{order.id?.slice(0,8)}</p>
@@ -274,9 +275,10 @@ export default function Staff() {
         <div className="space-y-4">
           <div className="grid grid-cols-4 gap-3 mb-2">
             {[["available","Нээлттэй","text-emerald-400"],["occupied","Идэвхтэй","text-rose-400"],["maintenance","Засвартай","text-amber-400"],["reserved","Захиалсан","text-purple-400"]].map(([s,lbl,c]) => (
-              <div key={s} className="bg-card border border-border/60 rounded-xl p-3 text-center">
+              <div key={s} className="cyber-hud-card rounded-xl p-3 text-center">
                 <p className={`text-xl font-black font-mono ${c}`}>{pcs.data?.filter(p => p.status === s).length || 0}</p>
                 <p className="text-[9px] text-muted-foreground font-mono uppercase">{lbl}</p>
+
               </div>
             ))}
           </div>
@@ -287,8 +289,9 @@ export default function Staff() {
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {(pcs.data || []).map(pc => (
-              <div key={pc.id} className="bg-card border border-border/80 rounded-xl p-4 hover:border-border transition-all">
+              <div key={pc.id} className="cyber-hud-card rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
+
                   <div className="flex items-center gap-2">
                     <Monitor className={`w-4 h-4 ${pc.device_type === "notebook" ? "text-pink-400" : "text-cyan-400"}`} />
                     <p className="text-sm font-black text-foreground">

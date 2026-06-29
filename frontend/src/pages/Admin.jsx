@@ -234,7 +234,7 @@ export default function Admin() {
                 {filteredProfiles.map(p => {
                   const isSelected = selectedUser?.id === p.id;
                   return (
-                    <div key={p.id} className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${isSelected ? "border-cyan-500/40 bg-cyan-500/5" : "border-border/80 bg-card hover:border-border"}`}>
+                    <div key={p.id} className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all cyber-hud-card ${isSelected ? "border-cyan-500/50 bg-cyan-500/5" : ""}`}>
                       <button className="flex items-center gap-4 flex-1 text-left" onClick={() => setSelectedUser(isSelected ? null : p)}>
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/20 to-cyan-500/20 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
                           <span className="text-xs font-black text-purple-300">{p.username?.[0]?.toUpperCase()}</span>
@@ -264,7 +264,7 @@ export default function Admin() {
 
           <div>
             {selectedUser ? (
-              <div className="bg-card border border-border/80 rounded-2xl p-5 space-y-5 sticky top-4">
+              <div className="cyber-hud-card rounded-2xl p-5 space-y-5 sticky top-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600/20 to-cyan-500/20 border border-purple-500/20 flex items-center justify-center">
                     <span className="text-base font-black text-purple-300">{selectedUser.username?.[0]?.toUpperCase()}</span>
@@ -338,7 +338,7 @@ export default function Admin() {
                 const action = ORDER_ACTIONS[order.status];
                 const isActive = order.status !== "delivered" && order.status !== "cancelled";
                 return (
-                  <div key={order.id} className={`bg-card border rounded-2xl p-4 flex flex-col gap-3 transition-all ${isActive ? "border-border hover:border-border/60" : "border-border/40 opacity-60"}`}>
+                  <div key={order.id} className={`cyber-hud-card rounded-2xl p-4 flex flex-col gap-3 transition-all ${isActive ? "" : "opacity-60"}`}>
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-[10px] font-black text-muted-foreground font-mono uppercase">#{order.id?.slice(0, 8)}</p>
@@ -399,7 +399,7 @@ export default function Admin() {
           ) : (
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {(tournaments.data || []).map(t => (
-                <div key={t.id} className="bg-card border border-border/80 rounded-2xl overflow-hidden hover:border-border transition-all">
+                <div key={t.id} className="cyber-hud-card rounded-2xl overflow-hidden transition-all">
                   {t.image_url && <img src={t.image_url} alt={t.title} className="w-full h-28 object-cover opacity-70" />}
                   <div className="p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
@@ -445,7 +445,7 @@ export default function Admin() {
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {(games.data || []).map(g => (
-              <div key={g.id} className="bg-card border border-border/80 rounded-2xl overflow-hidden hover:border-border transition-all flex">
+              <div key={g.id} className="cyber-hud-card rounded-2xl overflow-hidden transition-all flex">
                 {g.image_url && <img src={g.image_url} alt={g.title} className="w-20 h-full object-cover opacity-80 flex-shrink-0" />}
                 <div className="p-3 flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-1 mb-1">
@@ -484,7 +484,7 @@ export default function Admin() {
           </div>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {(pcs.data || []).map(pc => (
-              <div key={pc.id} className="bg-card border border-border/80 rounded-xl p-4 hover:border-border transition-all">
+              <div key={pc.id} className="cyber-hud-card rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-black text-foreground">{pc.device_type === "notebook" ? "LAPTOP" : "PC"}-{String(pc.pc_number).padStart(2,"0")}</p>
                   <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-lg border ${PC_STATUS_COLORS[pc.status] || ""}`}>
@@ -522,7 +522,7 @@ export default function Admin() {
               <RefreshCw className="w-3.5 h-3.5" /> Шинэчлэх
             </button>
           </div>
-          <div className="bg-card border border-border/80 rounded-2xl overflow-hidden">
+          <div className="cyber-hud-card rounded-2xl overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border/60">

@@ -323,3 +323,30 @@
   border: 1px solid rgba(0, 242, 254, 0.15);
 }
 
+.cyber-hud-card {
+  background: rgba(8, 8, 14, 0.85) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 242, 254, 0.12) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.cyber-hud-card:hover {
+  border-color: rgba(167, 139, 250, 0.3) !important;
+  box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.05), 0 0 15px rgba(0, 242, 254, 0.05) !important;
+}
+
+.cyber-glow-btn {
+  background: rgba(0, 242, 254, 0.05) !important;
+  border: 1px solid rgba(0, 242, 254, 0.25) !important;
+  color: #00f2fe !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.cyber-glow-btn:hover:not(:disabled) {
+  background: rgba(0, 242, 254, 0.15) !important;
+  border-color: rgba(0, 242, 254, 0.5) !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.2) !important;
+}
+
+
