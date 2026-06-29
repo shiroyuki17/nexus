@@ -27,7 +27,7 @@ export default function Profile() {
   const profiles     = useEntityList(() => entities.userProfile.list());
 
   // Find this user's profile
-  const profile = profiles.data?.find(p => p.user_id === user?.id || p.username === user?.username) || profiles.data?.[0] || null;
+  const profile = profiles.data?.find(p => p.user_id === user?.id || p.username === user?.name) || null;
 
   const [topUpAmount, setTopUpAmount] = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
@@ -86,7 +86,7 @@ export default function Profile() {
     }
   };
 
-  const isMember = user?.role === "member" || user?.role === "admin";
+  const isMember = profile?.role === "member" || user?.role === "admin";
   const rank = profile?.rank || "Bronze";
   const rankCfg = RANK_CONFIG[rank] || RANK_CONFIG.Bronze;
   const RankIcon = rankCfg.icon;
