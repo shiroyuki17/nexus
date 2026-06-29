@@ -8,7 +8,7 @@ services:
     startCommand: npx prisma db push && node backend/data/seed.js && node backend/server.js
     envVars:
       - key: DATABASE_URL
-        value: postgresql://nexus:RiCn0ZrjgHtxLPpGphVaw10uyJjcWENh@dpg-d910g168bjmc739j9nc0-a/nexus_urth
+        value: postgresql://nexus:RiCn0ZrjgHtxLPpGphVaw10uyJjcWENh@dpg-d910g168bjmc739j9nc0-a.singapore-postgres.render.com/nexus_urth
       - key: NODE_ENV
         value: production
       - key: DEFAULT_COMPANY_ID
