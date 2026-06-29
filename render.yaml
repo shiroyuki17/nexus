@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: chmod +x build.sh && bash build.sh
+    buildCommand: npm install && npx prisma generate && export PATH="$PWD/node_modules/.bin:$PATH" && cd frontend && vite build && cd .. && mv frontend/dist public
     startCommand: npx prisma db push && node backend/data/seed.js && node backend/server.js
     envVars:
       - key: DATABASE_URL
