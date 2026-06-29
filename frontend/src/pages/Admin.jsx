@@ -8,7 +8,7 @@ import {
   ChevronRight, RefreshCw, Trophy, Gamepad2, Monitor, Package,
   Plus, Trash2, Edit3, CheckCircle, X, Star, Shield, Zap,
   TrendingUp, Clock, UserCheck, TimerReset, PlayCircle, StopCircle,
-  CreditCard, Timer
+  CreditCard, Timer, Crown
 } from "lucide-react";
 
 const HOURLY_RATE = 3000; // ₮ per hour
@@ -112,7 +112,7 @@ export default function Admin() {
 
   // Create modal state
   const [createType, setCreateType] = useState(null); // 'tournament', 'game', 'pc', 'product'
-  const [createData, setCreateData] = useState({});
+  const [createData, setCreateData] = useState(/** @type {any} */ ({}));
   const [createLoading, setCreateLoading] = useState(false);
 
   const handleCreateSubmit = async () => {
@@ -581,7 +581,7 @@ export default function Admin() {
                   </div>
                   <div className="flex justify-between text-xs font-mono border-t border-border/20 pt-2 font-black">
                     <span className="text-foreground">Нийт төлбөр:</span>
-                    <span className="text-cyan-400">₮{(parseFloat(sessionHours || 0) * HOURLY_RATE).toLocaleString()}</span>
+                    <span className="text-cyan-400">₮{(parseFloat(sessionHours || "0") * HOURLY_RATE).toLocaleString()}</span>
                   </div>
                 </div>
 

@@ -10,7 +10,7 @@ import {
 
 const RANKS = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"];
 
-function InputField({ label, name, value, onChange, type = "text", placeholder, icon: Icon }) {
+function InputField({ label, name, value, onChange, type = "text", placeholder, icon: Icon = null }) {
   const [show, setShow] = useState(false);
   const isPassword = type === "password";
   return (

@@ -158,7 +158,7 @@ export default function PCStatus() {
     device_type: "pc",
     zone: "standard",
     specs: "",
-    hourly_rate: 4.0,
+    hourly_rate: "4.0",
     status: "available",
   });
 
@@ -174,7 +174,7 @@ export default function PCStatus() {
   const handleOpenAddModal = () => {
     setFormData(prev => ({
       ...prev,
-      pc_number: getNextNumber()
+      pc_number: String(getNextNumber())
     }));
     setIsAddOpen(true);
   };
